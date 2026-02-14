@@ -4,6 +4,7 @@ firmware/*.elf
 firmware/*.hex
 firmware/*.map
 firmware/build
+firmware/.clangd
 
 # General
 .DS_Store
