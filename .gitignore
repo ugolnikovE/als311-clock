@@ -1,0 +1,9 @@
+# firmware
+firmware/*.o
+firmware/*.elf
+firmware/*.hex
+firmware/*.map
+firmware/build
+
+# General
+.DS_Store
