@@ -4,11 +4,11 @@ PREFIX  = avr-
 CC      = $(PREFIX)gcc
 CP      = $(PREFIX)objcopy
 
-CFLAGS  = -Wall -mmcu=$(MMCU) -Isrc -Os
+CFLAGS  = -Wall -mmcu=$(MMCU) -Iinclude -Os
 LDFLAGS = -mmcu=$(MMCU)
 
 BUILDDIR = build
-SOURCES  = src/main.c src/sys/timer.c
+SOURCES  = src/main.c src/hal/systimer.c
 OBJECTS  = $(SOURCES:src/%.c=$(BUILDDIR)/%.o)
 TARGET   = $(BUILDDIR)/firmware.elf
 HEX      = $(TARGET:.elf=.hex)
@@ -17,7 +17,7 @@ all: $(TARGET)
 
 size: $(TARGET)
 	avr-size --mcu=$(MMCU) -C $<
-        
+
 upload: $(HEX)
 	avrdude -c usbasp -p m328p -U flash:w:$<:i
 

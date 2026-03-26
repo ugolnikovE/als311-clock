@@ -1,42 +1,22 @@
 #include <avr/io.h>
-#include "sys/timer.h"
+#include "hal/systimer.h"
+#include "hal/gpio.h"
 
-#define DS      PD2
-#define SH_CP   PD3
-#define ST_CP   PD4
+#define LED_PIN  PB5
+#define LED_PORT &PORTB
 
+static void led_fn(void)
+{
+        gpio_pin_toggle(LED_PORT, LED_PIN);
+}
 
 int main(void)
 {
+        systimer_init();
 
-        timer_init();
+        gpio_pin_output(LED_PORT, LED_PIN);
 
-        unsigned long last_toggle = millis();
+        systimer_register_callback(&led_fn, 500);
 
-        unsigned short int b = 0b00000011;
-
-        DDRD |= (1 << DS) | (1 << ST_CP) | (1 << SH_CP);
-
-        PORTD |= (0 << ST_CP);
-
-        while (1) {
-                if (millis() - last_toggle >= 500) {
-                        last_toggle = millis();
-
-                        for (int i = 7; i > -1; i--) {
-                                PORTD &= ~(1 << SH_CP);
-                                PORTD &= ~(1 << DS);
-                                PORTD |= (((b >> i) & 1) << DS);
-                                PORTD |= (1 << SH_CP);
-                        }
-                        PORTD |= (1 << ST_CP);
-                        PORTD &= ~(1 << ST_CP);
-
-                        b = b << 2;
-
-                        if (b == 0b00110000) {
-                                b = 0b00000011;
-                        }
-                }
-        }
+        while(1);
 }
