@@ -10,7 +10,7 @@
 #define TIMER_PRESCALER 64UL
 #define TIMER_OCR_VALUE ((F_CPU / (TIMER_PRESCALER * TIMER_FREQ)) - 1)
 
-static volatile uint64_t tick = 0;
+static volatile uint32_t tick = 0;
 
 
 #define MAX_CALLBACKS 4
@@ -42,20 +42,16 @@ ISR(TIMER0_COMPA_vect)
 
 void systimer_init()
 {
-        cli();
-
         TCNT0  = 0;
         OCR0A  = TIMER_OCR_VALUE;
         TCCR0A = (1 << WGM01);
         TCCR0B = (1 << CS01) | (1 << CS00);
         TIMSK0 = (1 << OCIE0A);
-
-        sei();
 }
 
-uint64_t systimer_millis()
+uint32_t systimer_millis()
 {
-        unsigned long t;
+        uint32_t t;
         cli();
         t = tick;
         sei();

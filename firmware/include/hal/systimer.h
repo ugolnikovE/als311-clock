@@ -13,6 +13,6 @@ void     systimer_init(void);
 uint8_t  systimer_register_callback(systimer_callback_t cb, uint16_t period);
 
 // Return elapsed milliseconds since init (atomic read)
-uint64_t systimer_millis(void);
+uint32_t systimer_millis(void);
 
 #endif
