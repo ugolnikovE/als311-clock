@@ -8,7 +8,7 @@ CFLAGS  = -Wall -mmcu=$(MMCU) -Iinclude -Os
 LDFLAGS = -mmcu=$(MMCU)
 
 BUILDDIR = build
-SOURCES  = src/main.c src/hal/systimer.c
+SOURCES  = src/main.c src/hal/systimer.c src/drivers/als311.c
 OBJECTS  = $(SOURCES:src/%.c=$(BUILDDIR)/%.o)
 TARGET   = $(BUILDDIR)/firmware.elf
 HEX      = $(TARGET:.elf=.hex)
