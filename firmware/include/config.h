@@ -14,6 +14,9 @@
 #define SR_LATCH_PORT PORTD
 #define SR_LATCH_PIN  PD4
 
+// I2C
+#define I2C_FREQUENCY 400000UL
+
 // UART
 #define BAUD 9600
 
