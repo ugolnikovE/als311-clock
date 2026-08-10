@@ -137,6 +137,7 @@ void als_init(void)
 
 void als_write(const char *str)
 {
+        uint8_t sreg = SREG;
         cli();
 
         uint8_t i;
@@ -149,5 +150,5 @@ void als_write(const char *str)
                 i++;
         }
 
-        sei();
+        SREG = sreg;
 }

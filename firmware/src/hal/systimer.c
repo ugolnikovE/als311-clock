@@ -52,9 +52,10 @@ void systimer_init()
 uint32_t systimer_millis()
 {
         uint32_t t;
+        uint8_t sreg = SREG;
         cli();
         t = tick;
-        sei();
+        SREG = sreg;
         return t;
 }
 
