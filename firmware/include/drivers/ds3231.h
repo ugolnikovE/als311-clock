@@ -19,7 +19,7 @@ uint8_t rtc_set_time(rtc_time_t *tm);
 
 // Start an async read of all time registers into the internal buffer. Non-blocking.
 // Call rtc_poll() to decode once i2c status leaves I2C_WORK. Returns 0 if accepted, 1 if busy/invalid
-uint8_t rtc_get_time(rtc_time_t *tm);
+uint8_t rtc_get_time(void);
 
 // Decode the last read buffer into tm. Call only after rtc_get_time() completed
 // (i2c status left I2C_WORK without error); decoding stale/partial data yields garbage

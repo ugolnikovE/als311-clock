@@ -38,9 +38,9 @@ uint8_t rtc_set_time(rtc_time_t *tm)
 }
 
 
-uint8_t rtc_get_time(rtc_time_t *tm)
+uint8_t rtc_get_time(void)
 {
-        if (tm == NULL || i2c_get_status() == I2C_WORK) {
+        if (i2c_get_status() == I2C_WORK) {
                 return 1;
         }
 
