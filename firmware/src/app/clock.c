@@ -1,4 +1,5 @@
 #include <avr/interrupt.h>
+#include <stdarg.h>
 #include <string.h>
 #include <stdint.h>
 
@@ -50,47 +51,48 @@ static clock_t clk = {
         .need_sep = 1,
 };
 
-static void ds3231_time_to_str(ds3231_time_t *tm, char *buf, uint8_t need_sep)
+static void clock_string_formatter(char *format, char *buf, ...)
 {
-        buf[0] = '0' + tm->hours / 10;
-        buf[1] = '0' + tm->hours % 10;
-        buf[2] = (need_sep) ? ':' : ' ';
-        buf[3] = '0' + tm->minutes / 10;
-        buf[4] = '0' + tm->minutes % 10;
-        buf[CLOCK_STR_LEN - 1] = '\0';
+        va_list arg_list;
+        va_start(arg_list, buf);
+
+        uint8_t i = 0;
+        for (; format[i] != '\0'; i++) {
+                if (format[i] == 'Q' && format[i+1] == 'Q') {
+                        uint8_t n = (uint8_t)va_arg(arg_list, int);
+                        buf[i]   = '0' + n / 10;
+                        buf[i+1] = '0' + n % 10;
+                        i++;
+                } else {
+                        buf[i] = format[i];
+                }
+        }
+        buf[i] = '\0';
+
+        va_end(arg_list);
 }
 
-static void ds3231_date_to_str(ds3231_time_t *tm, char *buf)
+static void time_to_str(ds3231_time_t *tm, char *buf)
 {
-        buf[0] = '0' + tm->date / 10;
-        buf[1] = '0' + tm->date % 10;
-        buf[2] = '.';
-        buf[3] = '0' + tm->month / 10;
-        buf[4] = '0' + tm->month % 10;
-        buf[CLOCK_STR_LEN - 1] = '\0';
+        clock_string_formatter("QQ:QQ", clk.buf, tm->hours, tm->minutes);
 }
 
-static void ds3231_year_to_str(ds3231_time_t *tm, char *buf)
+static void date_to_str(ds3231_time_t *tm, char *buf)
 {
-        buf[0] = 'Y';
-        buf[1] = ':';
-        buf[2] = ' ';
-        buf[3] = '0' + tm->year / 10;
-        buf[4] = '0' + tm->year % 10;
-        buf[CLOCK_STR_LEN - 1] = '\0';
+        clock_string_formatter("QQ.QQ", clk.buf, tm->date, tm->month);
 }
 
-static void fmt_time(ds3231_time_t *tm, char *buf)
+static void year_to_str(ds3231_time_t *tm, char *buf)
 {
-        ds3231_time_to_str(tm, buf, 1);
+        clock_string_formatter("Y: QQ", clk.buf, tm->year);
 }
 
 static setting_step_t clock_setting_steps[] = {
-        { fmt_time, 0, 2, &clk.tm.hours, 0, 23 },
-        { fmt_time, 3, 2, &clk.tm.minutes, 0, 59 },
-        { ds3231_date_to_str, 0, 2, &clk.tm.date, 1, 31 },
-        { ds3231_date_to_str, 3, 2, &clk.tm.month, 1, 12 },
-        { ds3231_year_to_str, 3, 2, &clk.tm.year, 0, 99 },
+        { time_to_str, 0, 2, &clk.tm.hours, 0, 23 },
+        { time_to_str, 3, 2, &clk.tm.minutes, 0, 59 },
+        { date_to_str, 0, 2, &clk.tm.date, 1, 31 },
+        { date_to_str, 3, 2, &clk.tm.month, 1, 12 },
+        { year_to_str, 3, 2, &clk.tm.year, 0, 99 },
 };
 
 static void setting_sync_time(void)
@@ -148,13 +150,14 @@ static void clock_st_time(void)
                 clk.sec_toggle_time = systimer_millis();
                 clk.need_sep ^= 1;
         }
-        ds3231_time_to_str(&clk.tm, clk.buf, clk.need_sep);
+        time_to_str(&clk.tm, clk.buf);
+        clk.buf[2] = (clk.need_sep) ? ':' : ' ';
         als_write(clk.buf);
 }
 
 static void clock_st_date(void)
 {
-        ds3231_date_to_str(&clk.tm, clk.buf);
+        date_to_str(&clk.tm, clk.buf);
         als_write(clk.buf);
 }
 
