@@ -4,16 +4,17 @@ PREFIX  = avr-
 CC      = $(PREFIX)gcc
 CP      = $(PREFIX)objcopy
 
-CFLAGS  = -Wall -mmcu=$(MMCU) -Iinclude -Os
+CFLAGS  = -Wall -mmcu=$(MMCU) -Iinclude -Os -g -MMD -MP
 LDFLAGS = -mmcu=$(MMCU)
 
 BUILDDIR = build
-SOURCES  = src/main.c src/hal/systimer.c src/drivers/als311.c
+SOURCES  = src/main.c src/hal/systimer.c src/drivers/als311.c src/hal/i2c.c src/drivers/ds3231.c src/drivers/button.c src/app/clock.c
 OBJECTS  = $(SOURCES:src/%.c=$(BUILDDIR)/%.o)
+DEPS     = $(OBJECTS:.o=.d)
 TARGET   = $(BUILDDIR)/firmware.elf
 HEX      = $(TARGET:.elf=.hex)
 
-all: $(TARGET)
+all: $(TARGET) $(HEX)
 
 size: $(TARGET)
 	avr-size --mcu=$(MMCU) -C $<
@@ -27,11 +28,13 @@ $(HEX): $(TARGET)
 $(TARGET): $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
 
-$(BUILDDIR)/%.o: src/%.c
+$(BUILDDIR)/%.o: src/%.c Makefile
 	mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(BUILDDIR)
+
+-include $(DEPS)
 
 .PHONY: all upload clean size
