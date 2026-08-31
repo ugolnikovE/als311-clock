@@ -110,7 +110,7 @@ void ds3231_init(void)
         systimer_register_callback(&ds3231_update, DS3231_UPDATE_MS);
 }
 
-uint8_t ds3231_set_time(ds3231_time_t *tm)
+uint8_t ds3231_set_time(const ds3231_time_t *tm)
 {
         if (tm == NULL) return 1;
 

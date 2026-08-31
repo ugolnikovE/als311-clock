@@ -36,7 +36,7 @@ static btn_t btns[BTN_COUNT] = {
 void btn_update(void)
 {
         for (uint8_t i = 0; i < BTN_COUNT; i++) {
-                uint8_t down = gpio_pin_read(btns[i].port, btns[i].pin);
+                uint8_t down = !gpio_pin_read(btns[i].port, btns[i].pin);
 
                 // Debounce
                 if (down) {

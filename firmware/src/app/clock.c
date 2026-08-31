@@ -97,6 +97,7 @@ static setting_step_t clock_setting_steps[] = {
 
 static void setting_sync_time(void)
 {
+        clk.tm.seconds = 0;
         ds3231_set_time(&clk.tm);
 }
 
@@ -104,14 +105,14 @@ static void setting_apply(int8_t v)
 {
         setting_step_t *step = &clock_setting_steps[clk.setting_ctr];
 
-        uint16_t span = step->max - step->min + 1;
+        int16_t span = step->max - step->min + 1;
         int16_t pos = *step->field - step->min;
 
         pos += v;
 
-        pos = (pos + span) % span;
+        pos = ((pos % span) + span) % span;
 
-        *step->field = pos;
+        *step->field = pos + step->min;
 }
 
 static void setting_plus_one(void)
@@ -141,11 +142,12 @@ static void setting_zero_ctr(void)
 
 static void setting_move_ctr(void)
 {
-        clk.setting_ctr = (clk.setting_ctr + 1) % sizeof(clock_setting_steps)/sizeof(clock_setting_steps[0]);
+        clk.setting_ctr = (clk.setting_ctr + 1) % CLOCK_SETTING_COUNT;
 }
 
 static void clock_st_time(void)
 {
+        ds3231_get_time(&clk.tm);
         if (systimer_millis() - clk.sec_toggle_time >= 1000) {
                 clk.sec_toggle_time = systimer_millis();
                 clk.need_sep ^= 1;
@@ -157,6 +159,7 @@ static void clock_st_time(void)
 
 static void clock_st_date(void)
 {
+        ds3231_get_time(&clk.tm);
         date_to_str(&clk.tm, clk.buf);
         als_write(clk.buf);
 }
@@ -204,6 +207,7 @@ static void clock_make_transition(void)
                                 t->action();
                         }
                         clk.st = t->next;
+                        break;
                     }
         }
 }
@@ -220,7 +224,6 @@ void clock_setup(void)
         sei();
 
         clk.sec_toggle_time = systimer_millis();
-        ds3231_get_time(&clk.tm);
 }
 
 void clock_update(void)
@@ -232,6 +235,6 @@ void clock_update(void)
                 case CLOCK_TIME: clock_st_time(); break;
                 case CLOCK_DATE: clock_st_date(); break;
                 case CLOCK_SETTING: clock_st_setting(); break;
-                default: break;
+                default: als_write("error"); break;
         }
 }
