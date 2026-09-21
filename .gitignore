@@ -6,5 +6,14 @@ firmware/*.map
 firmware/build
 firmware/.clangd
 
+# hardware
+hardware/*.bak
+hardware/*.csv
+hardware/*.gbr*
+hardware/hardware-backups
+hardware/*.kicad_prl
+hardware/fp-info-cache
+
+
 # General
 .DS_Store
