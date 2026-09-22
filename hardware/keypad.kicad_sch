@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "als311-clock")
-		(date "2026-09-21")
-		(rev "1.2")
+		(date "2026-09-22")
+		(rev "1.3")
 		(company "Copyright 2026 Ugolnikov Evgeny Licensed under CERN-OHL-P v2")
 	)
 	(lib_symbols
