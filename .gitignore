@@ -26,6 +26,9 @@ hardware/*drl
 hardware/*rpt
 hardware/*zip
 
+hardware/enclosure/*.FCBak
+hardware/enclosure/*.step
+
 
 # General
 .DS_Store
