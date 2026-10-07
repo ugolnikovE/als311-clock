@@ -6090,7 +6090,7 @@
 				)
 			)
 		)
-		(property "Value" "620Om"
+		(property "Value" "1kOm"
 			(at 0 1.65 90)
 			(layer "F.Fab")
 			(uuid "b02d76d2-3b2a-4964-bfaa-f2b86bd6d2e6")
@@ -13471,7 +13471,7 @@
 			(net 31 "unconnected-(J2-SHIELD-PadS1)_3")
 			(pinfunction "SHIELD")
 			(pintype "passive+no_connect")
-			(uuid "bc71fa39-3166-4443-8691-1ab5385b7785")
+			(uuid "03a74b8f-6d4b-4bdf-85a9-8ef34f054943")
 		)
 		(pad "S1" thru_hole oval
 			(at 4.32 -3 90)
@@ -13483,7 +13483,7 @@
 			(net 31 "unconnected-(J2-SHIELD-PadS1)_3")
 			(pinfunction "SHIELD")
 			(pintype "passive+no_connect")
-			(uuid "bc71fa39-3166-4443-8691-1ab5385b7785")
+			(uuid "7a626e42-5be5-48a5-a2a9-0d42d6caa119")
 		)
 		(pad "S1" thru_hole oval
 			(at 4.32 0.8 90)
@@ -13495,7 +13495,7 @@
 			(net 31 "unconnected-(J2-SHIELD-PadS1)_3")
 			(pinfunction "SHIELD")
 			(pintype "passive+no_connect")
-			(uuid "bc71fa39-3166-4443-8691-1ab5385b7785")
+			(uuid "03c83e8f-f613-485f-9e89-be48a8444f89")
 		)
 		(embedded_fonts no)
 		(model "${KICAD9_3DMODEL_DIR}/Connector_USB.3dshapes/USB_C_Receptacle_HRO_TYPE-C-31-M-17.step"
@@ -13743,7 +13743,7 @@
 			(justify left bottom)
 		)
 	)
-	(gr_text "ALS311-CLOCK\n\nrev1.3\nDate: 2026-09-22\n"
+	(gr_text "ALS311-CLOCK\n\nrev1.3.1\nDate: 2026-10-07"
 		(at 182.55 140.3 0)
 		(layer "F.SilkS")
 		(uuid "aef49595-7ee1-4bf9-ab8a-b8a9bf40dde1")
