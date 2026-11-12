@@ -12,18 +12,24 @@
 #define DS3231_I2C_TIME_REG 0x00
 #define DS3231_I2C_TEMP_REG 0x11
 #define DS3231_UPDATE_MS    10
-#define DS3231_SYNC_MS      25
+// Real time is MAX * UPDATE
+#define DS3231_SYNC_COUNTER_MAX 25       // 250ms
+#define DS3231_TEMP_SYNC_COUNTER_MAX 250 // 2500ms
 
 typedef enum {
         OP_READ,
+        OP_READ_TEMP,
         OP_WRITE
 } ds3231_op_t;
 
-static uint8_t buf[8];
-static uint8_t sync_ctr = DS3231_SYNC_MS;
+// The first 8 bits are used for time, the last 2 bits for temperature
+static uint8_t buf[10];
+static uint8_t sync_ctr = DS3231_SYNC_COUNTER_MAX;
+static uint8_t temp_sync_ctr = DS3231_TEMP_SYNC_COUNTER_MAX;
 static ds3231_status_t st = DS3231_IDLE;
 static ds3231_time_t b_tm;
 static ds3231_op_t op;
+static int8_t temp = 0;
 static uint8_t pending_write = 0;
 static ds3231_time_t pending_tm;
 
@@ -46,6 +52,16 @@ void ds3231_parse_buf()
         b_tm.date    = bcd_to_int(buf[5] & 0x3F);
         b_tm.month   = bcd_to_int(buf[6] & 0x1F);
         b_tm.year    = bcd_to_int(buf[7]);
+}
+
+void ds3231_parse_temp()
+{
+        temp = (int8_t)(buf[8]);
+
+        // Rounding
+        if (buf[9] >> 6 >= 0b01) {
+                temp += 1;
+        }
 }
 
 static void ds3231_sync_time(void)
@@ -73,6 +89,14 @@ static void ds3231_start_write(void)
         }
 }
 
+static void ds3231_sync_temp(void)
+{
+        if (!i2c_read_async(DS3231_I2C_ADDR, DS3231_I2C_TEMP_REG, buf + 8, 2)) {
+                st = DS3231_WORK;
+                op = OP_READ_TEMP;
+        }
+}
+
 
 static void ds3231_update(void)
 {
@@ -80,7 +104,10 @@ static void ds3231_update(void)
         if (st == DS3231_WORK) {
                 if (i2c_st == I2C_OK) {
                         if (op == OP_READ) {
+                                // If a current time value is read at the moment of setting the time, it is ignored
                                 if (!pending_write) ds3231_parse_buf();
+                        } else if (op == OP_READ_TEMP) {
+                                ds3231_parse_temp();
                         } else {
                                 pending_write = 0;
                         }
@@ -99,7 +126,12 @@ static void ds3231_update(void)
                 return;
         }
 
-        if (++sync_ctr >= DS3231_SYNC_MS) {
+        if (++temp_sync_ctr >= DS3231_TEMP_SYNC_COUNTER_MAX) {
+                ds3231_sync_temp();
+                temp_sync_ctr = 0;
+        }
+
+        if (++sync_ctr >= DS3231_SYNC_COUNTER_MAX) {
                 ds3231_sync_time();
                 sync_ctr = 0;
         }
@@ -131,6 +163,16 @@ void ds3231_get_time(ds3231_time_t *tm)
         cli();
 
         *tm = b_tm;
+
+        SREG = sreg;
+}
+
+void ds3231_get_temp(int8_t *tp)
+{
+        int8_t sreg = SREG;
+        cli();
+
+        *tp = temp;
 
         SREG = sreg;
 }

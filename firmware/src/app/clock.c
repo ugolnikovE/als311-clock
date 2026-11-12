@@ -15,11 +15,11 @@
 #define CLOCK_TRANSITION_COUNT 10
 
 typedef struct {
-        clock_state_t    current;
-        btn_name_t       btn_name;
-        btn_event_type_t btn_event;
-        clock_state_t    next;
-        void (*action)(void);
+        clock_state_t    current;       // Current state
+        btn_name_t       btn_name;      // Button name
+        btn_event_type_t btn_event;     // Button event (see button.h)
+        clock_state_t    next;          // Next state
+        void (*action)(void);           // Trigger action
 } transition_t;
 
 typedef struct {
@@ -33,6 +33,7 @@ typedef struct {
 typedef struct {
         char          buf[CLOCK_STR_LEN];
         ds3231_time_t tm;
+        int8_t        temp;
         btn_event_t   e;
         clock_state_t st;
         uint32_t      sec_toggle_time;
@@ -74,17 +75,22 @@ static void clock_string_formatter(char *format, char *buf, ...)
 
 static void time_to_str(ds3231_time_t *tm, char *buf)
 {
-        clock_string_formatter("QQ:QQ", clk.buf, tm->hours, tm->minutes);
+        clock_string_formatter("QQ:QQ", buf, tm->hours, tm->minutes);
 }
 
 static void date_to_str(ds3231_time_t *tm, char *buf)
 {
-        clock_string_formatter("QQ.QQ", clk.buf, tm->date, tm->month);
+        clock_string_formatter("QQ.QQ", buf, tm->date, tm->month);
 }
 
 static void year_to_str(ds3231_time_t *tm, char *buf)
 {
-        clock_string_formatter("Y: QQ", clk.buf, tm->year);
+        clock_string_formatter("Y: QQ", buf, tm->year);
+}
+
+static void temp_to_str(int8_t tp, char *buf)
+{
+        clock_string_formatter("  QQC", buf, tp);
 }
 
 static setting_step_t clock_setting_steps[] = {
@@ -164,6 +170,20 @@ static void clock_st_date(void)
         als_write(clk.buf);
 }
 
+static void clock_st_temp(void)
+{       
+        ds3231_get_temp(&clk.temp);
+
+        if (clk.temp < 0) {
+                temp_to_str(~(clk.temp)+1, clk.buf);
+                clk.buf[1] = '-';
+        } else {
+                temp_to_str(clk.temp, clk.buf);
+        }
+
+        als_write(clk.buf);
+}
+
 static void clock_st_setting(void)
 {
         if (systimer_millis() - clk.setting_toggle_time >= 500) {
@@ -182,11 +202,14 @@ static void clock_st_setting(void)
         als_write(clk.buf);
 }
 
+// This table handles transitions between screens in the clock application
 static transition_t clock_transition_table[] = {
         { CLOCK_TIME, BTN_MODE, BTN_EVENT_CLICK, CLOCK_DATE, NULL },
         { CLOCK_TIME, BTN_MODE, BTN_EVENT_LONG, CLOCK_SETTING, setting_zero_ctr },
-        { CLOCK_DATE, BTN_MODE, BTN_EVENT_CLICK, CLOCK_TIME, NULL },
+        { CLOCK_DATE, BTN_MODE, BTN_EVENT_CLICK, CLOCK_TEMP, NULL },
         { CLOCK_DATE, BTN_MODE, BTN_EVENT_LONG, CLOCK_SETTING, setting_zero_ctr },
+        { CLOCK_TEMP, BTN_MODE, BTN_EVENT_CLICK, CLOCK_TIME, NULL },
+        { CLOCK_TEMP, BTN_MODE, BTN_EVENT_LONG, CLOCK_SETTING, setting_zero_ctr },
         { CLOCK_SETTING, BTN_MODE, BTN_EVENT_LONG, CLOCK_TIME, setting_sync_time },
         { CLOCK_SETTING, BTN_MODE, BTN_EVENT_CLICK, CLOCK_SETTING, setting_move_ctr },
         { CLOCK_SETTING, BTN_1, BTN_EVENT_CLICK, CLOCK_SETTING, setting_minus_one },
@@ -234,6 +257,7 @@ void clock_update(void)
         switch (clk.st) {
                 case CLOCK_TIME: clock_st_time(); break;
                 case CLOCK_DATE: clock_st_date(); break;
+                case CLOCK_TEMP: clock_st_temp(); break;
                 case CLOCK_SETTING: clock_st_setting(); break;
                 default: als_write("error"); break;
         }

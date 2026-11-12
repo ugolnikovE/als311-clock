@@ -32,6 +32,9 @@ uint8_t ds3231_set_time(const ds3231_time_t *tm);
 /* Copy the current time snapshot into tm. Non-blocking, atomic, ~250ms stale */
 void ds3231_get_time(ds3231_time_t *tm);
 
+/* Copy the current temperature into tp. Non-blocking, atomic, ~2500 stale */
+void ds3231_get_temp(int8_t *tp);
+
 /* Current driver state */
 ds3231_status_t ds3231_get_status(void);
 

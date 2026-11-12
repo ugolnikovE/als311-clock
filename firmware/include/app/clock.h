@@ -4,6 +4,7 @@
 typedef enum {
         CLOCK_TIME,
         CLOCK_DATE,
+        CLOCK_TEMP,
         CLOCK_SETTING
 } clock_state_t;
 
